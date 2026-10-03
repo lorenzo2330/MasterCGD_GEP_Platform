@@ -8,6 +8,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, int32, CurrentHP, int32, MaxHP);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInvulnerabilityChanged, bool, bIsInvulnerable);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GEP_PLATFORM_API UHealth : public UActorComponent
@@ -15,7 +17,6 @@ class GEP_PLATFORM_API UHealth : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UHealth();
 	
 	UPROPERTY(VisibleAnywhere, Category = "Health|HP")
@@ -27,6 +28,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Health|HP")
 	int32 HP;
 	
+	UPROPERTY(EditAnywhere, Category = "Health|Invulnerability", meta = (ClampMin = "0.0"))
+	float InvulnerabilityDuration = 1.5f;
+	
+	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
+	FOnInvulnerabilityChanged OnInvulnerabilityChanged;
+	
 	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
 	FOnHealthChanged OnHealthChanged;
 
@@ -35,17 +42,32 @@ public:
 
 	virtual void BeginPlay() override;
 	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void ResetHealth();
+	
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void RefillHealth();
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void IncreaseMaxHP();
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	bool DecreaseHP();
-
-protected:
 	
+	UFUNCTION(BlueprintPure, Category = "Health")
+	bool IsInvulnerable() const { return bIsInvulnerable; }
+
+	UFUNCTION(BlueprintPure, Category = "Health")
+	bool IsAlive() const { return HP > 0; }
+
+private:
+	bool bIsInvulnerable = false;
+	FTimerHandle InvulnerabilityTimer;
+
+	void StartInvulnerability();
+	void EndInvulnerability();
 	
 	
 };

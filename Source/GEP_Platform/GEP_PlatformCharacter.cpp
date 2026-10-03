@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GEP_PlatformCharacter.h"
+
+#include "EnemyBase.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -12,6 +14,8 @@
 #include "InputActionValue.h"
 #include "Health.h"
 #include "GEP_Platform.h"
+
+class AEnemyBase;
 
 AGEP_PlatformCharacter::AGEP_PlatformCharacter()
 {
@@ -64,6 +68,7 @@ void AGEP_PlatformCharacter::BeginPlay()
 	SpawnRotation = GetActorRotation();
 
 	Health->OnDeath.AddDynamic(this, &AGEP_PlatformCharacter::HandleDeath);
+	Health->OnInvulnerabilityChanged.AddDynamic(this, &AGEP_PlatformCharacter::HandleInvulnerabilityChanged);
 }
 
 void AGEP_PlatformCharacter::HandleDeath()
@@ -77,6 +82,11 @@ void AGEP_PlatformCharacter::HandleDeath()
 	}
 
 	Health->ResetHealth();
+}
+
+void AGEP_PlatformCharacter::ToggleMeshVisibility()
+{
+	GetMesh()->SetVisibility(!GetMesh()->IsVisible());
 }
 
 void AGEP_PlatformCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -159,4 +169,44 @@ void AGEP_PlatformCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AGEP_PlatformCharacter::Bounce()
+{
+	// Keep horizontal velocity, override only Z
+	LaunchCharacter(FVector(0.f, 0.f, BounceVelocity), /*bXYOverride*/ false, /*bZOverride*/ true);
+	LastStompTime = GetWorld()->GetTimeSeconds();
+}
+
+bool AGEP_PlatformCharacter::IsInStompGrace() const
+{
+	return GetWorld()->GetTimeSeconds() - LastStompTime < StompGraceTime;
+}
+
+void AGEP_PlatformCharacter::HandleInvulnerabilityChanged(bool bIsInvulnerable)
+{
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	if (bIsInvulnerable)
+	{
+		TimerManager.SetTimer(BlinkTimer, this, &AGEP_PlatformCharacter::ToggleMeshVisibility, BlinkInterval, true);
+	}
+	else
+	{
+		TimerManager.ClearTimer(BlinkTimer);
+		GetMesh()->SetVisibility(true);
+		RecheckEnemyContacts(); // keep last: it may start new i-frames
+	}
+}
+
+void AGEP_PlatformCharacter::RecheckEnemyContacts()
+{
+	TArray<AActor*> Overlapping;
+	GetCapsuleComponent()->GetOverlappingActors(Overlapping, AEnemyBase::StaticClass());
+	for (AActor* Actor : Overlapping)
+	{
+		if (AEnemyBase* Enemy = Cast<AEnemyBase>(Actor))
+		{
+			Enemy->RecheckContact(this);
+		}
+	}
 }
