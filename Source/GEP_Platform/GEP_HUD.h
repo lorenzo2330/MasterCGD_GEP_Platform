@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GEP_PlatformGameMode.h" 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "GEP_HUD.generated.h"
@@ -19,4 +20,16 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UGEP_UserWidget> Widget;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
+	TSubclassOf<UUserWidget> VictoryWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> ActiveOverlay;
+
+	UFUNCTION()
+	void HandleStateChanged(EGameFlowState NewState);
 };

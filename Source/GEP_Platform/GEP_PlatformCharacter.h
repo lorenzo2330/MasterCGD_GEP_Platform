@@ -56,11 +56,12 @@ public:
 	bool IsAlive() const { return Health && Health->IsAlive(); }
 	
 	//-----------------------------------------------STOMP---------------------------------	
+	//-----------------------------------------------GAMEFLOW------------------------------
 	
+	void RespawnAtCheckpoint();
 	
+	//-----------------------------------------------GAMEFLOW------------------------------
 	
-	FVector SpawnLocation;
-	FRotator SpawnRotation;
 	
 protected:
 
@@ -101,6 +102,11 @@ protected:
 	void RecheckEnemyContacts();
 	
 	//-----------------------------------------------STOMP---------------------------------	
+	//-----------------------------------------------GAMEFLOW------------------------------
+	
+	virtual void FellOutOfWorld(const UDamageType& DmgType) override;
+	
+	//-----------------------------------------------GAMEFLOW------------------------------
 	
 	
 	/** Jump Input Action */

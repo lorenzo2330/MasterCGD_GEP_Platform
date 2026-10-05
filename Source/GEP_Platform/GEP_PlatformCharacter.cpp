@@ -14,7 +14,9 @@
 #include "InputActionValue.h"
 #include "Health.h"
 #include "GEP_Platform.h"
+#include "GEP_PlatformGameMode.h"
 
+class AGEP_PlatformGameMode;
 class AEnemyBase;
 
 AGEP_PlatformCharacter::AGEP_PlatformCharacter()
@@ -63,9 +65,10 @@ void AGEP_PlatformCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Remember the starting point, replaced later by the last checkpoint
-	SpawnLocation = GetActorLocation();
-	SpawnRotation = GetActorRotation();
+	if (AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>())
+	{
+		GM->SetRespawnTransform(FTransform(GetActorRotation(), GetActorLocation()));
+	}
 
 	Health->OnDeath.AddDynamic(this, &AGEP_PlatformCharacter::HandleDeath);
 	Health->OnInvulnerabilityChanged.AddDynamic(this, &AGEP_PlatformCharacter::HandleInvulnerabilityChanged);
@@ -73,6 +76,7 @@ void AGEP_PlatformCharacter::BeginPlay()
 
 void AGEP_PlatformCharacter::HandleDeath()
 {
+	/*
 	// Teleport, stop residual velocity, realign the camera
 	SetActorLocation(SpawnLocation, false, nullptr, ETeleportType::TeleportPhysics);
 	GetCharacterMovement()->StopMovementImmediately();
@@ -82,6 +86,28 @@ void AGEP_PlatformCharacter::HandleDeath()
 	}
 
 	Health->ResetHealth();
+	*/
+	if (AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>())
+	{
+		GM->HandlePlayerDeath();
+	}
+}
+
+void AGEP_PlatformCharacter::RespawnAtCheckpoint()
+{
+	const AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>();
+	if (!GM)
+	{
+		return;
+	}
+
+	const FTransform& Target = GM->GetRespawnTransform();
+	TeleportTo(Target.GetLocation(), Target.Rotator());
+	GetCharacterMovement()->StopMovementImmediately();
+	if (AController* C = GetController())
+	{
+		C->SetControlRotation(Target.Rotator());
+	}
 }
 
 void AGEP_PlatformCharacter::ToggleMeshVisibility()
@@ -209,4 +235,14 @@ void AGEP_PlatformCharacter::RecheckEnemyContacts()
 			Enemy->RecheckContact(this);
 		}
 	}
+}
+
+void AGEP_PlatformCharacter::FellOutOfWorld(const UDamageType& DmgType)
+{
+	// Caduta sotto il Kill Z del livello
+	
+	if (!IsAlive()) { return; }
+
+	GetHealth()->DecreaseHP();
+	if (IsAlive()) { RespawnAtCheckpoint(); }
 }
