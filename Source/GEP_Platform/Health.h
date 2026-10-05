@@ -19,15 +19,6 @@ class GEP_PLATFORM_API UHealth : public UActorComponent
 public:	
 	UHealth();
 	
-	UPROPERTY(VisibleAnywhere, Category = "Health|HP")
-	int32 LimitMaxHP = 5;
-	
-	UPROPERTY(EditAnywhere, Category = "Health|HP")
-	int32 MaxHP = 3;
-	
-	UPROPERTY(EditAnywhere, Category = "Health|HP")
-	int32 HP;
-	
 	UPROPERTY(EditAnywhere, Category = "Health|Invulnerability", meta = (ClampMin = "0.0"))
 	float InvulnerabilityDuration = 1.5f;
 
@@ -49,13 +40,24 @@ public:
 	
 	UFUNCTION(Category = "Health")
 	bool IsAlive() const { return HP > 0; }
+	
+	int32 GetCurrentHP() const { return HP; }
+	int32 GetMaxHP() const { return MaxHP; }
 
 	FOnDeath OnDeath;
 	FOnInvulnerabilityChanged OnInvulnerabilityChanged;
+	FOnHealthChanged OnHealthChanged;
 	
 private:
 	
-	FOnHealthChanged OnHealthChanged;
+	UPROPERTY(VisibleAnywhere, Category = "Health|HP")
+	int32 LimitMaxHP = 5;
+	
+	UPROPERTY(EditAnywhere, Category = "Health|HP")
+	int32 MaxHP = 3;
+	
+	UPROPERTY(EditAnywhere, Category = "Health|HP")
+	int32 HP;
 	
 	bool bIsInvulnerable = false;
 	FTimerHandle InvulnerabilityTimer;

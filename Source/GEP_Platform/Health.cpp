@@ -6,13 +6,14 @@
 UHealth::UHealth()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	HP = MaxHP;
 }
 
 void UHealth::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	HP = MaxHP;
+	
 }
 
 void UHealth::EndPlay(const EEndPlayReason::Type EndPlayReason)

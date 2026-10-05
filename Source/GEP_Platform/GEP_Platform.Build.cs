@@ -17,10 +17,12 @@ public class GEP_Platform : ModuleRules
 			"AIModule",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
-			"UMG",
-			"Slate",
-			"AIModule", 
-			"NavigationSystem" 
+			//Da qui aggiunti io
+			"UMG",					//UserWidget / HUD
+			"Slate",				//UserWidget / HUD
+			"SlateCore",			//UserWidget / HUD
+			"AIModule",				//Enemy
+			"NavigationSystem"		//Enemy
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
