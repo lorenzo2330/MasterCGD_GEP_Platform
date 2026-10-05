@@ -3,7 +3,6 @@
 
 #include "Health.h"
 
-// Sets default values for this component's properties
 UHealth::UHealth()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -66,8 +65,7 @@ void UHealth::StartInvulnerability()
 
 	bIsInvulnerable = true;
 	OnInvulnerabilityChanged.Broadcast(true);
-	GetWorld()->GetTimerManager().SetTimer(
-		InvulnerabilityTimer, this, &UHealth::EndInvulnerability, InvulnerabilityDuration, false);
+	GetWorld()->GetTimerManager().SetTimer(InvulnerabilityTimer, this, &UHealth::EndInvulnerability, InvulnerabilityDuration, false);
 }
 
 void UHealth::EndInvulnerability()

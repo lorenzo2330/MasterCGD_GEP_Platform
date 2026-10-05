@@ -18,7 +18,9 @@ public class GEP_Platform : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate"
+			"Slate",
+			"AIModule", 
+			"NavigationSystem" 
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

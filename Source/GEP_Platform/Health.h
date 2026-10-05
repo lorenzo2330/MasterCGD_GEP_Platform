@@ -30,39 +30,33 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Health|Invulnerability", meta = (ClampMin = "0.0"))
 	float InvulnerabilityDuration = 1.5f;
-	
-	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
-	FOnInvulnerabilityChanged OnInvulnerabilityChanged;
-	
-	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
-	FOnHealthChanged OnHealthChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Health|Events")
-	FOnDeath OnDeath;
 
 	virtual void BeginPlay() override;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
-	UFUNCTION(BlueprintCallable, Category = "Health")
+	UFUNCTION(Category = "Health")
 	void ResetHealth();
 	
-	UFUNCTION(BlueprintCallable, Category = "Health")
+	UFUNCTION(Category = "Health")
 	void RefillHealth();
 	
-	UFUNCTION(BlueprintCallable, Category = "Health")
+	UFUNCTION(Category = "Health")
 	void IncreaseMaxHP();
 	
-	UFUNCTION(BlueprintCallable, Category = "Health")
+	UFUNCTION(Category = "Health")
 	bool DecreaseHP();
 	
-	UFUNCTION(BlueprintPure, Category = "Health")
-	bool IsInvulnerable() const { return bIsInvulnerable; }
-
-	UFUNCTION(BlueprintPure, Category = "Health")
+	UFUNCTION(Category = "Health")
 	bool IsAlive() const { return HP > 0; }
 
+	FOnDeath OnDeath;
+	FOnInvulnerabilityChanged OnInvulnerabilityChanged;
+	
 private:
+	
+	FOnHealthChanged OnHealthChanged;
+	
 	bool bIsInvulnerable = false;
 	FTimerHandle InvulnerabilityTimer;
 
