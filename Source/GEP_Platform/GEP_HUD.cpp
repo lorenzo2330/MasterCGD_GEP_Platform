@@ -43,10 +43,21 @@ void AGEP_HUD::HandleStateChanged(EGameFlowState NewState)
 	{
 		OverlayClass = VictoryWidgetClass;
 	}
+	else if (NewState == EGameFlowState::Paused)
+	{
+		OverlayClass = PausedWidgetClass;
+	}
 
 	if (OverlayClass)
 	{
 		ActiveOverlay = CreateWidget<UUserWidget>(PC, OverlayClass);
+		
+		if (!ActiveOverlay)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to create Overlay Widget"));
+			return;
+		}
+		
 		ActiveOverlay->AddToViewport(10);
 
 		FInputModeUIOnly Mode;

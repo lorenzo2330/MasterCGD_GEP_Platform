@@ -22,6 +22,9 @@ protected:
 	TObjectPtr<UGEP_UserWidget> Widget;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
+	TSubclassOf<UUserWidget> PausedWidgetClass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")

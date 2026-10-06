@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GEP_PlatformPlayerController.generated.h"
 
+class UInputAction;
 class UInputMappingContext;
 class UUserWidget;
 
@@ -19,6 +20,12 @@ class AGEP_PlatformPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 protected:
+	/** Opens the pause menu (assigned in the controller Blueprint). */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> PauseAction;
+
+	/** Calls TogglePause() on the GameMode. */
+	void OnPausePressed();
 
 	/** Input Mapping Contexts */
 	UPROPERTY(EditAnywhere, Category ="Input|Input Mappings")

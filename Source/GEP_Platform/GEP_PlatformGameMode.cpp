@@ -2,11 +2,31 @@
 
 #include "GEP_PlatformGameMode.h"
 
+#include "GEP_PlatformPlayerController.h"
 #include "GEP_PlayerState.h"
 #include "GEP_SaveSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 AGEP_PlatformGameMode::AGEP_PlatformGameMode(){}
+
+void AGEP_PlatformGameMode::ReturnToMainMenu()
+{
+	if (MainMenuLevelName.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MainMenuLevelName not set in the GameMode Blueprint"));
+		return;
+	}
+	
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+	{
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetShowMouseCursor(false);
+	}
+	
+	UGameplayStatics::SetGamePaused(this, false);
+	UGameplayStatics::OpenLevel(this, MainMenuLevelName);
+	
+}
 
 void AGEP_PlatformGameMode::SetFlowState(EGameFlowState NewState)
 {

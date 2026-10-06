@@ -2,12 +2,25 @@
 
 
 #include "GEP_PlatformPlayerController.h"
+
+#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
 #include "Blueprint/UserWidget.h"
 #include "GEP_Platform.h"
+#include "GEP_PlatformGameMode.h"
 #include "Widgets/Input/SVirtualJoystick.h"
+
+void AGEP_PlatformPlayerController::OnPausePressed()
+{
+	AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>();
+	
+	if (GM)
+	{
+		GM->TogglePause();
+	}
+}
 
 void AGEP_PlatformPlayerController::BeginPlay()
 {
@@ -58,6 +71,21 @@ void AGEP_PlatformPlayerController::SetupInputComponent()
 			}
 		}
 	}
+	
+	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent);
+	
+	if (!EIC)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot find enhanced input component for player controller"));
+		return;
+	}
+
+	if (!PauseAction)
+	{
+		UE_LOG(LogTemp, Error, TEXT("PauseAction not set in the PlayerController Blueprint"));
+		return;
+	}
+	EIC->BindAction(PauseAction, ETriggerEvent::Started, this, &AGEP_PlatformPlayerController::OnPausePressed);
 }
 
 bool AGEP_PlatformPlayerController::ShouldUseTouchControls() const

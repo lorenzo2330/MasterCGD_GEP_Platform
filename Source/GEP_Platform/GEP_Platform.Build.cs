@@ -14,7 +14,6 @@ public class GEP_Platform : ModuleRules
 			"Engine",
 			"InputCore",
 			"EnhancedInput",
-			"AIModule",
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			//Da qui aggiunti io

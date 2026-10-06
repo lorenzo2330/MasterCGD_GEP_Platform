@@ -45,7 +45,6 @@ public:
 	UFUNCTION(Exec)
 	void DebugVictory();
 	
-	/** Debug: forza la vittoria (il boss non esiste ancora). */
 	UFUNCTION(Exec)
 	void DebugDeleteSave();
 	
@@ -53,6 +52,14 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Game Flow")
 	FOnGameFlowStateChanged OnStateChanged;
+	
+	/** Level opened by "Return to main menu". */
+	UPROPERTY(EditDefaultsOnly, Category = "Game Flow")
+	FName MainMenuLevelName;
+
+	/** Resumes the world, restores input and opens the main menu level. */
+	UFUNCTION(BlueprintCallable)
+	void ReturnToMainMenu();
 
 private:
 	void SetFlowState(EGameFlowState NewState);

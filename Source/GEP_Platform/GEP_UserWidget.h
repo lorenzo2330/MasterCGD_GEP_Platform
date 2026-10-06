@@ -8,7 +8,6 @@ class UTextBlock;
 class UHealth;
 class AGEP_PlayerState;
 
-/** Widget base dell'HUD: vite e monete. Il layout si fa nel Blueprint (WBP_HUD). */
 UCLASS(Abstract)
 class GEP_PLATFORM_API UGEP_UserWidget : public UUserWidget
 {
