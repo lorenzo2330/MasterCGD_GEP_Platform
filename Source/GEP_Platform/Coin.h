@@ -17,6 +17,8 @@ public:
 	ACoin();
 
 protected:
+	virtual void BeginPlay() override;
+	
 	//Hook Blueprint per VFX e audio di raccolta
 	UFUNCTION(BlueprintImplementableEvent, Category = "Coin")
 	void OnCollected();

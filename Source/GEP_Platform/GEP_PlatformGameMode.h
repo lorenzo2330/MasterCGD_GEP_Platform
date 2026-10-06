@@ -44,6 +44,12 @@ public:
 	/** Debug: forza la vittoria (il boss non esiste ancora). */
 	UFUNCTION(Exec)
 	void DebugVictory();
+	
+	/** Debug: forza la vittoria (il boss non esiste ancora). */
+	UFUNCTION(Exec)
+	void DebugDeleteSave();
+	
+	void SaveProgress(int32 MaxHP, int32 Coins) const;
 
 	UPROPERTY(BlueprintAssignable, Category = "Game Flow")
 	FOnGameFlowStateChanged OnStateChanged;

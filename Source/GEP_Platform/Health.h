@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "Health.generated.h"
 
+class UGEP_SaveSubsystem;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, int32, CurrentHP, int32, MaxHP);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInvulnerabilityChanged, bool, bIsInvulnerable);
@@ -44,6 +45,8 @@ public:
 	int32 GetCurrentHP() const { return HP; }
 	int32 GetMaxHP() const { return MaxHP; }
 
+	void RestoreFromSave(int32 SavedMaxHP);
+	
 	FOnDeath OnDeath;
 	FOnInvulnerabilityChanged OnInvulnerabilityChanged;
 	FOnHealthChanged OnHealthChanged;
@@ -64,6 +67,4 @@ private:
 
 	void StartInvulnerability();
 	void EndInvulnerability();
-	
-	
 };

@@ -15,6 +15,9 @@
 #include "Health.h"
 #include "GEP_Platform.h"
 #include "GEP_PlatformGameMode.h"
+#include "GEP_PlayerState.h"
+#include "GEP_SaveGame.h"
+#include "GEP_SaveSubsystem.h"
 
 class AGEP_PlatformGameMode;
 class AEnemyBase;
@@ -56,8 +59,6 @@ AGEP_PlatformCharacter::AGEP_PlatformCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 	
-	
-	
 	Health = CreateDefaultSubobject<UHealth>(TEXT("Health"));
 }
 
@@ -68,6 +69,23 @@ void AGEP_PlatformCharacter::BeginPlay()
 	if (AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>())
 	{
 		GM->SetRespawnTransform(FTransform(GetActorRotation(), GetActorLocation()));
+
+		UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this);
+		if (UGEP_SaveGame* Data = Save ? Save->ConsumePendingLoad() : nullptr)
+		{
+			GM->SetRespawnTransform(Data->RespawnTransform);
+			Health->RestoreFromSave(Data->MaxHP);
+
+			if (AGEP_PlayerState* PS = GetPlayerState<AGEP_PlayerState>())
+			{
+				PS->SetCoins(Data->Coins);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("PlayerState not ready: coins not restored"));
+			}
+			RespawnAtCheckpoint();
+		}
 	}
 
 	Health->OnDeath.AddDynamic(this, &AGEP_PlatformCharacter::HandleDeath);
@@ -76,17 +94,6 @@ void AGEP_PlatformCharacter::BeginPlay()
 
 void AGEP_PlatformCharacter::HandleDeath()
 {
-	/*
-	// Teleport, stop residual velocity, realign the camera
-	SetActorLocation(SpawnLocation, false, nullptr, ETeleportType::TeleportPhysics);
-	GetCharacterMovement()->StopMovementImmediately();
-	if (AController* PC = GetController())
-	{
-		PC->SetControlRotation(SpawnRotation);
-	}
-
-	Health->ResetHealth();
-	*/
 	if (AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>())
 	{
 		GM->HandlePlayerDeath();

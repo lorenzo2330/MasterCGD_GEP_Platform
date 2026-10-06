@@ -2,6 +2,7 @@
 #include "Checkpoint.h"
 #include "GEP_PlatformCharacter.h"
 #include "GEP_PlatformGameMode.h"
+#include "GEP_PlayerState.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
@@ -49,6 +50,9 @@ void ACheckpoint::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	FVector Location = RespawnPoint->GetComponentLocation();
 	Location.Z += Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	GM->SetRespawnTransform(FTransform(RespawnPoint->GetComponentRotation(), Location));
+	
+	AGEP_PlayerState* PS = Player->GetPlayerState<AGEP_PlayerState>();
+	if (PS) { GM->SaveProgress(Player->Health->GetMaxHP(), PS->GetCoins()); }
 
 	OnActivated();
 }

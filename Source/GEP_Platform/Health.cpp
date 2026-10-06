@@ -3,6 +3,8 @@
 
 #include "Health.h"
 
+#include "Kismet/GameplayStatics.h"
+
 UHealth::UHealth()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -58,6 +60,14 @@ bool UHealth::DecreaseHP()
 	if (HP <= 0) { OnDeath.Broadcast();  }
 	else { StartInvulnerability(); }
 	return true;
+}
+
+void UHealth::RestoreFromSave(int32 SavedMaxHP)
+{
+	//Se SavedMaxHP è < di 1, restituisce 1 | Se SavedMaxHP > LimitMaxHP, restituisce LimitMaxHP | Altrimenti restituisce SavedMaxHP
+	MaxHP = FMath::Clamp(SavedMaxHP, 1, LimitMaxHP);
+	HP = MaxHP;
+	OnHealthChanged.Broadcast(HP, MaxHP);
 }
 
 void UHealth::StartInvulnerability()
