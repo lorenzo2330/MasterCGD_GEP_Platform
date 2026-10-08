@@ -3,6 +3,7 @@
 
 #include "GEP_SaveSubsystem.h"
 
+#include "GEP_Platform.h"
 #include "GEP_SaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -41,7 +42,7 @@ bool UGEP_SaveSubsystem::RequestContinue()
 		
 		if (!Data)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Error, save in slot %s is unreadable or corrupted"), SlotName);
+			UE_LOG(LogGEP_Platform, Error, TEXT("Error, save in slot %s is unreadable or corrupted"), SlotName);
 			return false;
 		}
 		
@@ -51,10 +52,10 @@ bool UGEP_SaveSubsystem::RequestContinue()
 			SessionCollectedCoins = Data->CollectedCoins;
 			return true;
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Error, save version (disk) %d does not match (newest) %d"), Data->SaveVersion, UGEP_SaveGame::CurrentVersion);
+		UE_LOG(LogGEP_Platform, Error, TEXT("Error, save version (disk) %d does not match (newest) %d"), Data->SaveVersion, UGEP_SaveGame::CurrentVersion);
 		return false;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Error, there are not saved files called %s"), SlotName);
+	UE_LOG(LogGEP_Platform, Error, TEXT("Error, there are not saved files called %s"), SlotName);
 	return false;
 }
 
@@ -71,7 +72,7 @@ bool UGEP_SaveSubsystem::SaveAtCheckpoint(const FTransform& RespawnTransform, in
 	
 	if (!Data)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Impossible to create a SaveGameObject"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("Impossible to create a SaveGameObject"));
 		return false;
 	}
 	

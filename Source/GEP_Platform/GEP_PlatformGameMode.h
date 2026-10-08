@@ -41,7 +41,6 @@ public:
 	void SetRespawnTransform(const FTransform& NewTransform) { RespawnTransform = NewTransform; }
 	const FTransform& GetRespawnTransform() const { return RespawnTransform; }
 
-	/** Debug: forza la vittoria (il boss non esiste ancora). */
 	UFUNCTION(Exec)
 	void DebugVictory();
 	
@@ -58,7 +57,7 @@ public:
 	FName MainMenuLevelName;
 
 	/** Resumes the world, restores input and opens the main menu level. */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Game Flow")
 	void ReturnToMainMenu();
 
 private:

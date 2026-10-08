@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "AITypes.h"
@@ -61,12 +59,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Enemy", meta = (ClampMin = "0"))
 	float StompHeightTolerance = 30.f;
  
-	//Secondi dopo i quali il player viene distrutto
+	//Secondi dopo i quali il nemico viene distrutto
 	UPROPERTY(EditAnywhere, Category = "Enemy", meta = (ClampMin = "0"))
 	float DeathLifeSpan = 0.5f;
 	
 	//Punti che definiscono il percorso di patrol
-	UPROPERTY(EditAnywhere, Category = "Enemy", meta = (MakeEditWidget = "true"))
+	UPROPERTY(EditAnywhere, Category = "Enemy|Patrol", meta = (MakeEditWidget = "true"))
 	TArray<FVector> PatrolPoints;
 
 	//Velocità di patrol
@@ -74,11 +72,11 @@ protected:
 	float PatrolSpeed = 150.f;
 
 	//Tempo di attesa tra un segmento di patrol ed il successivo
-	UPROPERTY(EditAnywhere, Category = "Enemy", meta = (ClampMin = "0.1"))
+	UPROPERTY(EditAnywhere, Category = "Enemy|Patrol", meta = (ClampMin = "0.1"))
 	float PatrolWaitTime = 1.f;
 
 	//Cm di tolleranza dal patrol point per considerarlo raggiunto
-	UPROPERTY(EditAnywhere, Category = "Enemy", meta = (ClampMin = "5"))
+	UPROPERTY(EditAnywhere, Category = "Enemy|Patrol", meta = (ClampMin = "5"))
 	float PatrolAcceptanceRadius = 30.f;
 	
 	//Scale per fare lo squash del nemico quando viene colpito
@@ -93,7 +91,7 @@ protected:
 
  
 	UFUNCTION()
-	void HandleDeath();
+	virtual void HandleDeath();
  
 	//Chiamabile in BP per gestire i feedback di morte del player (VFX, sound, scale-down)
 	UFUNCTION(BlueprintImplementableEvent, Category = "Enemy")
@@ -117,4 +115,6 @@ private:
 
 	FVector MeshStartScale = FVector::OneVector;
 	float DeathElapsed = 0.f;
+	
+	bool bIsDying = false;
 };

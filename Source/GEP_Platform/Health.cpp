@@ -3,19 +3,12 @@
 
 #include "Health.h"
 
-#include "Kismet/GameplayStatics.h"
+#include "GEP_Platform.h"
 
 UHealth::UHealth()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	HP = MaxHP;
-}
-
-void UHealth::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	
+	bWantsInitializeComponent = true;
 }
 
 void UHealth::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -32,7 +25,7 @@ void UHealth::ResetHealth()
 	HP = MaxHP;
 	OnHealthChanged.Broadcast(HP, MaxHP);
 	StartInvulnerability();
-	UE_LOG(LogTemp, Display, TEXT("Reset -> %d HP"), HP);
+	UE_LOG(LogGEP_Platform, Verbose, TEXT("Reset -> %d HP"), HP);
 }
 
 void UHealth::RefillHealth()
@@ -40,14 +33,14 @@ void UHealth::RefillHealth()
 	if (HP == MaxHP) { IncreaseMaxHP(); }
 	HP = MaxHP;
 	OnHealthChanged.Broadcast(HP, MaxHP);
-	UE_LOG(LogTemp, Display, TEXT("Healthed -> %d HP"), HP);
+	UE_LOG(LogGEP_Platform, Verbose, TEXT("Healthed -> %d HP"), HP);
 }
 
 void UHealth::IncreaseMaxHP()
 {
 	MaxHP = FMath::Min(MaxHP + 1, LimitMaxHP);
 	OnHealthChanged.Broadcast(HP, MaxHP);
-	UE_LOG(LogTemp, Display, TEXT("HP recharged -> New max = %d"), MaxHP);
+	UE_LOG(LogGEP_Platform, Verbose, TEXT("HP recharged -> New max = %d"), MaxHP);
 }
 
 bool UHealth::DecreaseHP()
@@ -55,7 +48,7 @@ bool UHealth::DecreaseHP()
 	if (bIsInvulnerable || HP <= 0) { return false; }
 	
 	HP = FMath::Max(HP - 1, 0);
-	UE_LOG(LogTemp, Display, TEXT("Hurted -> Remains %d HP"), HP);
+	UE_LOG(LogGEP_Platform, Verbose, TEXT("Hurted -> Remains %d HP"), HP);
 	OnHealthChanged.Broadcast(HP, MaxHP);
 	if (HP <= 0) { OnDeath.Broadcast();  }
 	else { StartInvulnerability(); }
@@ -68,6 +61,12 @@ void UHealth::RestoreFromSave(int32 SavedMaxHP)
 	MaxHP = FMath::Clamp(SavedMaxHP, 1, LimitMaxHP);
 	HP = MaxHP;
 	OnHealthChanged.Broadcast(HP, MaxHP);
+}
+
+void UHealth::InitializeComponent()
+{
+	Super::InitializeComponent();
+	HP = MaxHP;
 }
 
 void UHealth::StartInvulnerability()

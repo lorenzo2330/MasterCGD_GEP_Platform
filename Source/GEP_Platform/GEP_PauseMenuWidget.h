@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,6 +5,7 @@
 #include "GEP_MenuWidgetBase.h"
 #include "GEP_PauseMenuWidget.generated.h"
 
+class AGEP_PlatformGameMode;
 class UButton;
 /**
  * 
@@ -31,5 +30,9 @@ protected:
 	UFUNCTION() void OnResumeClicked();
 	UFUNCTION() void OnMainMenuClicked();
 	UFUNCTION() void OnQuitClicked();
+	
+private:
+	/** Returns the game GameMode or logs an Error and returns nullptr. */
+	AGEP_PlatformGameMode* GetGameModeChecked() const;
 	
 };

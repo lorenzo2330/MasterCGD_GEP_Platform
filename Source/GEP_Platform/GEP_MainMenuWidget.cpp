@@ -1,9 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GEP_MainMenuWidget.h"
 
 #include "GEP_ConfirmWidget.h"
+#include "GEP_Platform.h"
 #include "GEP_SaveSubsystem.h"
 #include "Components/Button.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,7 +21,7 @@ void UGEP_MainMenuWidget::NativeConstruct()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Error: couldn't find saved data"));
+		UE_LOG(LogGEP_Platform, Warning, TEXT("Error: couldn't find saved data"));
 		ButtonContinue->SetIsEnabled(false);
 	}
 	
@@ -36,14 +34,14 @@ void UGEP_MainMenuWidget::OnNewGameClicked()
 
 	if (GameLevelName == NAME_None)
 	{
-		UE_LOG(LogTemp, Error, TEXT("GameLevelName not set in WBP_MainMenu Class Defaults"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("GameLevelName not set in WBP_MainMenu Class Defaults"));
 		return;
 	}
 
 	UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this);
 	if (!Save)
 	{
-		UE_LOG(LogTemp, Error, TEXT("OnNewGameClicked: SaveSubsystem not found"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("OnNewGameClicked: SaveSubsystem not found"));
 		return;
 	}
 
@@ -55,21 +53,21 @@ void UGEP_MainMenuWidget::OnNewGameClicked()
 
 	if (!ConfirmWidgetClass)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ConfirmWidgetClass not set in WBP_MainMenu Class Defaults"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("ConfirmWidgetClass not set in WBP_MainMenu Class Defaults"));
 		return;
 	}
 
 	APlayerController* PC = GetOwningPlayer();
 	if (!PC)
 	{
-		UE_LOG(LogTemp, Error, TEXT("OnNewGameClicked: no owning player"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("OnNewGameClicked: no owning player"));
 		return;
 	}
 
 	ActiveConfirm = CreateWidget<UGEP_ConfirmWidget>(PC, ConfirmWidgetClass);
 	if (!ActiveConfirm)
 	{
-		UE_LOG(LogTemp, Error, TEXT("OnNewGameClicked: CreateWidget failed for ConfirmWidgetClass"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("OnNewGameClicked: CreateWidget failed for ConfirmWidgetClass"));
 		return;
 	}
 
@@ -82,27 +80,26 @@ void UGEP_MainMenuWidget::OnContinueClicked()
 {
 	if (GameLevelName == NAME_None)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Error: GameLevelName is None (need to be set in Class Defaults)"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("GameLevelName not set in WBP_MainMenu Class Defaults."));
 		return;
 	}
-	
-	if (UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this))
+
+	UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this);
+	if (!Save)
 	{
-		if (Save->RequestContinue())
-		{
-			UGameplayStatics::OpenLevel(GetWorld(), GameLevelName, true);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Error: couldn't load the level"));
-			ButtonContinue->SetIsEnabled(false);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Error: couldn't find saved data"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("SaveSubsystem not found: Continue disabled."));
 		ButtonContinue->SetIsEnabled(false);
+		return;
 	}
+
+	if (!Save->RequestContinue())
+	{
+		UE_LOG(LogGEP_Platform, Warning, TEXT("RequestContinue() failed: save missing, corrupted or wrong version. Continue disabled."));
+		ButtonContinue->SetIsEnabled(false);
+		return;
+	}
+
+	UGameplayStatics::OpenLevel(GetWorld(), GameLevelName, true);
 }
 
 void UGEP_MainMenuWidget::OnQuitClicked()
@@ -112,12 +109,15 @@ void UGEP_MainMenuWidget::OnQuitClicked()
 
 void UGEP_MainMenuWidget::StartNewGameConfirmed()
 {
-	if (UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this))
+	UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this);
+	if (!Save)
 	{
-		Save->DeleteSave();
-		Save->StartNewGame();
+		UE_LOG(LogGEP_Platform, Error, TEXT("SaveSubsystem not found: cannot start a new game."));
+		return;
 	}
-	
+
+	Save->DeleteSave();
+	Save->StartNewGame();
 	UGameplayStatics::OpenLevel(GetWorld(), GameLevelName, true);
 }
 

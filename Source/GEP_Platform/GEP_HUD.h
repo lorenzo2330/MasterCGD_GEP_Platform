@@ -1,11 +1,12 @@
 #pragma once
 
-#include "GEP_PlatformGameMode.h" 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "GEP_HUD.generated.h"
 
 class UGEP_UserWidget;
+class UUserWidget;
+enum class EGameFlowState : uint8;
 
 UCLASS()
 class GEP_PLATFORM_API AGEP_HUD : public AHUD

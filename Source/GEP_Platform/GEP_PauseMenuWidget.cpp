@@ -3,6 +3,7 @@
 
 #include "GEP_PauseMenuWidget.h"
 
+#include "GEP_Platform.h"
 #include "GEP_PlatformGameMode.h"
 #include "Components/Button.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -20,19 +21,19 @@ void UGEP_PauseMenuWidget::NativeConstruct()
 
 FReply UGEP_PauseMenuWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
-	if (CloseKeys.Contains(InKeyEvent.GetKey()))
+	if (!CloseKeys.Contains(InKeyEvent.GetKey()))
 	{
-		AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>();
-	
-		if (GM)
-		{
-			GM->TogglePause();
-			
-			return FReply::Handled();
-		}
+		return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 	}
-	
-	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
+
+	AGEP_PlatformGameMode* GM = GetGameModeChecked();
+	if (!GM)
+	{
+		return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
+	}
+
+	GM->TogglePause();
+	return FReply::Handled();
 }
 
 void UGEP_PauseMenuWidget::OnResumeClicked()
@@ -58,4 +59,14 @@ void UGEP_PauseMenuWidget::OnMainMenuClicked()
 void UGEP_PauseMenuWidget::OnQuitClicked()
 {
 	UKismetSystemLibrary::QuitGame(GetWorld(), GetOwningPlayer(), EQuitPreference::Quit, true);
+}
+
+AGEP_PlatformGameMode* UGEP_PauseMenuWidget::GetGameModeChecked() const
+{
+	AGEP_PlatformGameMode* GM = GetWorld() ? GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>() : nullptr;
+	if (!GM)
+	{
+		UE_LOG(LogGEP_Platform, Error, TEXT("GameMode is not AGEP_PlatformGameMode: check World Settings of this map."));
+	}
+	return GM;
 }

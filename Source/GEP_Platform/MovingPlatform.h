@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -13,28 +11,26 @@ class GEP_PLATFORM_API AMovingPlatform : public AActor
 	
 public:	
 	AMovingPlatform();
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void Tick(float DeltaTime) override;
+private:	
 
 	FVector StartLocation;
 
-	UPROPERTY(VisibleAnywhere)
-	float DistanceMoved = 0.0f;
-
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Platform")
 	float MaxDistance = 250.0f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Platform")
 	FVector PlatformVelocity = FVector(0.0f, 0.0f, 100.0f);
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Platform")
 	FRotator PlatformRotationVelocity = FRotator(0.0f, 0.0f, 0.0f);
 
 	void MovePlatform(float DeltaTime);
 
 	void RotatePlatform(float DeltaTime);
+	
 };

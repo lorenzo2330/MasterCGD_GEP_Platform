@@ -5,7 +5,6 @@
 #include "GEP_ConfirmWidget.generated.h"
 
 class UButton;
-class UTextBlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnConfirmResult);
 

@@ -1,4 +1,6 @@
 #include "Coin.h"
+
+#include "GEP_Platform.h"
 #include "GEP_PlatformCharacter.h"
 #include "GEP_PlayerState.h"
 #include "GEP_SaveSubsystem.h"
@@ -31,26 +33,27 @@ void ACoin::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// ACoin::BeginPlay, dopo Super::BeginPlay()
-	const UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this);
-	UE_LOG(LogTemp, Display, TEXT("Coin BeginPlay: %s | collected=%d"),
-		*GetName(), Save ? Save->IsCoinCollected(GetFName()) : -1);
-	
 	//Se la moneta è già stata raccolta, la distruggo
 	const UGEP_SaveSubsystem* SaveSubsystem = UGEP_SaveSubsystem::Get(this);
-	if (SaveSubsystem && SaveSubsystem->IsCoinCollected(GetFName())) { Destroy(); return; }
+	if (SaveSubsystem && SaveSubsystem->IsCoinCollected(GetFName())) { Destroy(); }
 }
 
 void ACoin::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                       int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (bCollected) { return; }
+	
 
 	AGEP_PlatformCharacter* Player = Cast<AGEP_PlatformCharacter>(OtherActor);
 	if (!Player || !Player->IsAlive()) { return; }
 
 	AGEP_PlayerState* PS = Player->GetPlayerState<AGEP_PlayerState>();
-	if (!PS) { return; }
+	if (!PS)
+	{
+		UE_LOG(LogGEP_Platform, Error, TEXT("Player has no AGEP_PlayerState: set Player State Class in BP_ThirdPersonGameMode."));
+		return;
+	}
+	
 
 	bCollected = true;
 	
@@ -62,6 +65,6 @@ void ACoin::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, U
 	PS->AddCoins(Value);
 
 	OnCollected();
-	SetLifeSpan(CollectedLifeSpan);
+	if (CollectedLifeSpan > 0.f) { SetLifeSpan(CollectedLifeSpan); } else { Destroy(); }
 	
 }

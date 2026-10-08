@@ -1,7 +1,7 @@
-// GEP_EnemyBase.cpp
 #include "EnemyBase.h"
 
 #include "AIController.h"
+#include "GEP_Platform.h"
 #include "TimerManager.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -11,9 +11,6 @@
 
 AEnemyBase::AEnemyBase()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	
-	// Tick is enabled only during the death squash.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
@@ -56,6 +53,7 @@ void AEnemyBase::BeginPlay()
 void AEnemyBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (!bIsDying) { return; }
 
 	DeathElapsed += DeltaSeconds;
 	const float Alpha = DeathLifeSpan > 0.f ? FMath::Clamp(DeathElapsed / DeathLifeSpan, 0.f, 1.f) : 1.f;
@@ -82,7 +80,7 @@ void AEnemyBase::ResolveContact(AGEP_PlatformCharacter* Player, EContactZone Zon
 
 	if (IsStompValid(Player))
 	{
-		//Se il player è vulnerabile, subisce danno
+		//Se il nemico è vulnerabile, subisce danno
 		if (CanBeStomped()) { OnStomped(Player); }
 		
 		//A prescindere dall'invulnerabilità, il player rimbalza dopo lo stomp sul nemico
@@ -128,6 +126,8 @@ void AEnemyBase::OnHurtZoneBeginOverlap(UPrimitiveComponent* OverlappedComp, AAc
 
 void AEnemyBase::HandleDeath()
 {
+	bIsDying = true;
+	
 	//Disattiva le collisioni in modo che non si possano generare ulteriori eventi
 	SetActorEnableCollision(false);
 	GetCharacterMovement()->DisableMovement();
@@ -147,7 +147,7 @@ void AEnemyBase::StartPatrol()
 	AAIController* AIC = Cast<AAIController>(GetController());
 	if (!AIC)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: no AIController, patrol disabled."), *GetName());
+		UE_LOG(LogGEP_Platform, Error, TEXT("%s: no AIController, patrol disabled. Check AutoPossessAI / AIControllerClass."), *GetName());
 		return;
 	}
 

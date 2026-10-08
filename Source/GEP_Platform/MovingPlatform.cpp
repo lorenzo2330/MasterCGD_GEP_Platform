@@ -30,9 +30,7 @@ void AMovingPlatform::MovePlatform(float DeltaTime)
 	
 	if (FVector::Dist(StartLocation, CurrentLocation) >= MaxDistance)
 	{
-		FVector MoveDirection = PlatformVelocity.GetSafeNormal();
-		FVector NewStartLocation = StartLocation + MoveDirection * MaxDistance;
-		StartLocation = NewStartLocation;
+		StartLocation += PlatformVelocity.GetSafeNormal() * MaxDistance;
 		PlatformVelocity *= -1;
 	}
 	
@@ -41,7 +39,6 @@ void AMovingPlatform::MovePlatform(float DeltaTime)
 
 void AMovingPlatform::RotatePlatform(float DeltaTime)
 {
-	UE_LOG(LogTemp, Warning, TEXT("MovingPlatform::RotatePlatform"));
 	AddActorLocalRotation(PlatformRotationVelocity * DeltaTime);
 }
 

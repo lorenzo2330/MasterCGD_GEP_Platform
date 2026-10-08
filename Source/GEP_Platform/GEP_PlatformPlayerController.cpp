@@ -76,13 +76,13 @@ void AGEP_PlatformPlayerController::SetupInputComponent()
 	
 	if (!EIC)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Cannot find enhanced input component for player controller"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("Cannot find enhanced input component for player controller"));
 		return;
 	}
 
 	if (!PauseAction)
 	{
-		UE_LOG(LogTemp, Error, TEXT("PauseAction not set in the PlayerController Blueprint"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("PauseAction not set in the PlayerController Blueprint"));
 		return;
 	}
 	EIC->BindAction(PauseAction, ETriggerEvent::Started, this, &AGEP_PlatformPlayerController::OnPausePressed);

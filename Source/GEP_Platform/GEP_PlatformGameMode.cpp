@@ -2,6 +2,7 @@
 
 #include "GEP_PlatformGameMode.h"
 
+#include "GEP_Platform.h"
 #include "GEP_PlatformPlayerController.h"
 #include "GEP_PlayerState.h"
 #include "GEP_SaveSubsystem.h"
@@ -13,7 +14,7 @@ void AGEP_PlatformGameMode::ReturnToMainMenu()
 {
 	if (MainMenuLevelName.IsNone())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MainMenuLevelName not set in the GameMode Blueprint"));
+		UE_LOG(LogGEP_Platform, Error, TEXT("MainMenuLevelName not set in the GameMode Blueprint"));
 		return;
 	}
 	
@@ -56,10 +57,14 @@ void AGEP_PlatformGameMode::HandlePlayerDeath()
 
 void AGEP_PlatformGameMode::TriggerVictory()
 {
-	// La vittoria chiude la partita: nessun "Continua"
-	if (UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this))
+	UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this);
+	if (Save)
 	{
 		Save->DeleteSave();
+	}
+	else
+	{
+		UE_LOG(LogGEP_Platform, Error, TEXT("SaveSubsystem not found: save file not deleted on victory."));
 	}
 	SetFlowState(EGameFlowState::Victory);
 }
@@ -74,9 +79,14 @@ void AGEP_PlatformGameMode::RestartCurrentLevel()
 		PC->SetShowMouseCursor(false);
 	}
 	
-	if (UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this))
+	UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this);
+	if (!Save)
 	{
-		if (!Save->RequestContinue()) { Save->StartNewGame(); }
+		UE_LOG(LogGEP_Platform, Error, TEXT("SaveSubsystem not found: restarting without save/session reset."));
+	}
+	else if (!Save->RequestContinue())
+	{
+		Save->StartNewGame();
 	}
 
 	UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this, true)));
@@ -87,7 +97,7 @@ void AGEP_PlatformGameMode::DebugVictory()
 	TriggerVictory();
 }
 
-void AGEP_PlatformGameMode::DebugDeleteSave()   // dichiarata UFUNCTION(Exec) nel .h
+void AGEP_PlatformGameMode::DebugDeleteSave() 
 {
 	if (UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this))
 	{
@@ -100,6 +110,13 @@ void AGEP_PlatformGameMode::SaveProgress(int32 MaxHP, int32 Coins) const
 {
 	if (UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this))
 	{
-		Save->SaveAtCheckpoint(RespawnTransform, MaxHP, Coins);
+		if (!Save->SaveAtCheckpoint(RespawnTransform, MaxHP, Coins))
+		{
+			UE_LOG(LogGEP_Platform, Error, TEXT("Impossible to save"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogGEP_Platform, Error, TEXT("SaveSubsystem not found: restarting without save/session reset"));
 	}
 }

@@ -82,7 +82,7 @@ void AGEP_PlatformCharacter::BeginPlay()
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("PlayerState not ready: coins not restored"));
+				UE_LOG(LogGEP_Platform, Warning, TEXT("PlayerState not ready: coins not restored"));
 			}
 			RespawnAtCheckpoint();
 		}
