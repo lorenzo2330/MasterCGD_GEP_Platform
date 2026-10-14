@@ -43,6 +43,10 @@ public:
  
 	bool IsAlive() const;
 	
+	//Chiamata dall'AttackNotify (boss)
+	UFUNCTION(BlueprintCallable, Category = "Enemy|Attack")
+	void ApplyAttackHit();
+	
 
 protected:
  
@@ -54,6 +58,18 @@ protected:
  
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Enemy")
 	TObjectPtr<UBoxComponent> HurtZone;
+	
+	//Il boss fa danno tramite AttackNotify (per evitare imprecisione con l'animazione di attacco)
+	UPROPERTY(EditAnywhere, Category = "Enemy")
+	bool bUsesAttackNotify = false;
+	
+	//Parametro per tunare la forza orizzontale impressa dal nemico
+	UPROPERTY(EditAnywhere, Category = "Enemy|Knockback", meta = (ClampMin = "0"))
+	float KnockbackHorizontal = 0.f;
+
+	//Parametro per tunare la forza verticale impressa dal nemico
+	UPROPERTY(EditAnywhere, Category = "Enemy|Knockback", meta = (ClampMin = "0"))
+	float KnockbackVertical = 0.f;
  
 	//Distanza max ("di compenetrazione") tra il player e il top dell'enemy 
 	UPROPERTY(EditAnywhere, Category = "Enemy", meta = (ClampMin = "0"))
@@ -117,4 +133,5 @@ private:
 	float DeathElapsed = 0.f;
 	
 	bool bIsDying = false;
+	bool bAttackHitActive = false;
 };

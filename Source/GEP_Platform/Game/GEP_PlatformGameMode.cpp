@@ -90,19 +90,9 @@ void AGEP_PlatformGameMode::RestartCurrentLevel()
 	UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this, true)));
 }
 
-void AGEP_PlatformGameMode::DebugVictory()
-{
-	TriggerVictory();
-}
+void AGEP_PlatformGameMode::RegisterEnemy() { AliveEnemies = ++TotalEnemies; }
 
-void AGEP_PlatformGameMode::DebugDeleteSave() 
-{
-	if (UGEP_SaveSubsystem* Save = UGEP_SaveSubsystem::Get(this))
-	{
-		Save->DeleteSave();
-		Save->StartNewGame();
-	}
-}
+void AGEP_PlatformGameMode::NotifyEnemyDefeated() { --AliveEnemies; OnEnemyCountChanged.Broadcast(AliveEnemies, TotalEnemies); }
 
 void AGEP_PlatformGameMode::SaveProgress(int32 MaxHP, int32 Coins) const
 {

@@ -60,8 +60,8 @@ public:
 	
 	//-----------------------------------------------GAMEFLOW------------------------------
 	
-	
-	
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ApplyKnockback(const FVector& SourceLocation, float HorizontalStrength, float VerticalStrength);
 	
 	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")

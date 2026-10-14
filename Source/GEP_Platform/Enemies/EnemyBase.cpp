@@ -8,6 +8,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/GEP_PlatformCharacter.h"
 #include "Combat/Health.h"
+#include "Game/GEP_PlatformGameMode.h"
+
+class AGEP_PlatformGameMode;
 
 AEnemyBase::AEnemyBase()
 {
@@ -46,6 +49,11 @@ void AEnemyBase::BeginPlay()
 	HurtZone->OnComponentBeginOverlap.AddDynamic(this, &AEnemyBase::OnHurtZoneBeginOverlap);
 	Health->OnDeath.AddDynamic(this, &AEnemyBase::HandleDeath);
 	
+	if (AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>())
+	{
+		GM->RegisterEnemy();
+	}
+	
 	MeshStartScale = GetMesh()->GetRelativeScale3D();
 	StartPatrol();
 }
@@ -74,7 +82,6 @@ void AEnemyBase::ResolveContact(AGEP_PlatformCharacter* Player, EContactZone Zon
 {
 	if (!Player || !Player->IsAlive() || !IsAlive()) { return; }
 
-	// Grace window after a stomp: avoids a second hit when both zones fire or several enemies are close.
 	//Evita un secondo stomp se il player è ancora legato allo stomp precedente (finestra di tolleranza) 
 	if (Player->IsInStompGrace()) { return; }
 
@@ -88,7 +95,17 @@ void AEnemyBase::ResolveContact(AGEP_PlatformCharacter* Player, EContactZone Zon
 		return;
 	}
 
-	if (Zone == EContactZone::Hurt)	{ Player->GetHealth()->DecreaseHP(); }
+	if (Zone != EContactZone::Hurt) { return; }
+	
+	//Se si usa AttackNotify, non serve segnalare il fatto che si ha subito danno
+	if (bUsesAttackNotify && !bAttackHitActive) { return; }
+
+	//Knockback applicato solo quando si subisce danno
+	const bool bDamaged = Player->GetHealth()->DecreaseHP();
+	if (bDamaged && Player->IsAlive())
+	{
+		Player->ApplyKnockback(GetActorLocation(), KnockbackHorizontal, KnockbackVertical);
+	}
 }
 
 void AEnemyBase::RecheckContact(AGEP_PlatformCharacter* Player)
@@ -104,8 +121,26 @@ bool AEnemyBase::IsAlive() const
 	return Health && Health->IsAlive();
 }
 
+void AEnemyBase::ApplyAttackHit()
+{
+	if (!IsAlive()) { return; }
+
+	TArray<AActor*> Overlapping;
+	HurtZone->GetOverlappingActors(Overlapping, AGEP_PlatformCharacter::StaticClass());
+
+	bAttackHitActive = true;
+	for (AActor* Actor : Overlapping)
+	{
+		if (AGEP_PlatformCharacter* Player = Cast<AGEP_PlatformCharacter>(Actor))
+		{
+			ResolveContact(Player, EContactZone::Hurt);
+		}
+	}
+	bAttackHitActive = false;
+}
+
 void AEnemyBase::OnStompZoneBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AGEP_PlatformCharacter* Player = Cast<AGEP_PlatformCharacter>(OtherActor);
 	if (Player && OtherComp == Player->GetCapsuleComponent())
@@ -132,6 +167,11 @@ void AEnemyBase::HandleDeath()
 	SetActorEnableCollision(false);
 	GetCharacterMovement()->DisableMovement();
 	StopPatrol();
+	
+	if (AGEP_PlatformGameMode* GM = GetWorld()->GetAuthGameMode<AGEP_PlatformGameMode>())
+	{
+		GM->NotifyEnemyDefeated();
+	}
 
 	DeathElapsed = 0.f;
 	SetActorTickEnabled(true);
@@ -150,8 +190,10 @@ void AEnemyBase::StartPatrol()
 		UE_LOG(LogGEP_Platform, Error, TEXT("%s: no AIController, patrol disabled. Check AutoPossessAI / AIControllerClass."), *GetName());
 		return;
 	}
+	
+	WorldPatrolPoints.Reset();
 
-	//Mappa subito i punti di patorl per evitare problemi agli stessi durante il movimento
+	//Mappa subito i punti di patrol per evitare problemi agli stessi durante il movimento
 	const FTransform ActorTransform = GetActorTransform();
 	for (const FVector& Local : PatrolPoints)
 	{
@@ -191,7 +233,7 @@ void AEnemyBase::OnPatrolMoveCompleted(FAIRequestID RequestID, EPathFollowingRes
 
 	const int32 Last = WorldPatrolPoints.Num() - 1;
 
-	//Se il patrol è stato completato, inverte la direzione, altrimenti torna all'ultimo punto di patrol
+	//Se il patrol è stato completato, inverte la direzione
 	if (Result == EPathFollowingResult::Success)
 	{
 		if (PatrolIndex + PatrolDirection > Last || PatrolIndex + PatrolDirection < 0)

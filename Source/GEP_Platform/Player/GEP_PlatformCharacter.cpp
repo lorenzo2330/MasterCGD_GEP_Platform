@@ -115,6 +115,25 @@ void AGEP_PlatformCharacter::RespawnAtCheckpoint()
 	}
 }
 
+void AGEP_PlatformCharacter::ApplyKnockback(const FVector& SourceLocation, float HorizontalStrength,
+	float VerticalStrength)
+{
+	if (HorizontalStrength <= 0.f && VerticalStrength <= 0.f) { return; }
+
+	//Direzione tra la Source e il Player, schiacciato sul piano orizzontale
+	FVector Direction = GetActorLocation() - SourceLocation;
+	Direction.Z = 0.f;
+
+	//Se il vettore è quasi nullo (player e sorgente nello stesso punto), Normalize() restituisce false
+	if (!Direction.Normalize()) { Direction = -GetActorForwardVector(); }
+
+	const FVector Impulse = Direction * HorizontalStrength + FVector::UpVector * VerticalStrength;
+	
+	//Doppio true perchè il knockback deve sovrascrivere le velocità, non sommarsi
+	LaunchCharacter(Impulse, true, true);
+	
+}
+
 void AGEP_PlatformCharacter::ToggleMeshVisibility()
 {
 	GetMesh()->SetVisibility(!GetMesh()->IsVisible());
@@ -207,6 +226,7 @@ void AGEP_PlatformCharacter::Bounce()
 	// Keep horizontal velocity, override only Z
 	LaunchCharacter(FVector(0.f, 0.f, BounceVelocity), /*bXYOverride*/ false, /*bZOverride*/ true);
 	LastStompTime = GetWorld()->GetTimeSeconds();
+	
 }
 
 bool AGEP_PlatformCharacter::IsInStompGrace() const
